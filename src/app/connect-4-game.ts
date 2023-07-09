@@ -33,16 +33,6 @@ export class Connect4Game {
     return this.game;
   }
 
-  private getNextIndexI(j: number) {
-    let nextIndexI = TABLE_HEIGHT - 1;
-    for (let i = nextIndexI; i >= 0; i--) {
-      if (this.game[i][j].player === null) {
-        return i;
-      }
-    }
-    return nextIndexI;
-  }
-
   private isValidMove(node: IGameNode, [i, j]: number[]) {
     if (this.lastPlayerMoved === node.player) {
       return false;
@@ -130,6 +120,16 @@ export class Connect4Game {
 
   getWinner() {
     return this.winner;
+  }
+
+  getNextIndexI(j: number) {
+    let nextIndexI = TABLE_HEIGHT - 1;
+    for (let i = nextIndexI; i >= 0; i--) {
+      if (this.game[i][j].player === null) {
+        return i;
+      }
+    }
+    return nextIndexI;
   }
 
   addNode(node: IGameNode, j: number) {

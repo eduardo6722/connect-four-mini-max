@@ -18,7 +18,11 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: #e8e8e8;
+  background: #272727;
+}
+
+button:active {
+  transform: scale(0.9);
 }
 
 .blink-red {
