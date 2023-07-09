@@ -33,6 +33,16 @@ export class Connect4Game {
     return this.game;
   }
 
+  private getNextIndexI(j: number) {
+    let nextIndexI = TABLE_HEIGHT - 1;
+    for (let i = nextIndexI; i >= 0; i--) {
+      if (this.game[i][j].player === null) {
+        return i;
+      }
+    }
+    return nextIndexI;
+  }
+
   private isValidMove(node: IGameNode, [i, j]: number[]) {
     if (this.lastPlayerMoved === node.player) {
       return false;
@@ -54,7 +64,7 @@ export class Connect4Game {
   }
 
   private checkEndGame(node: IGameNode, [i, j]: number[]) {
-    const directions: [number, number][] = [
+    const directions: number[][] = [
       [1, 0],
       [0, 1],
       [1, 1],
@@ -65,8 +75,7 @@ export class Connect4Game {
       let count = 1;
       let x = i + dx;
       let y = j + dy;
-      const matchedNodes: [number, number][] = [[i, j]];
-
+      const matchedNodes: number[][] = [[i, j]];
       while (
         x >= 0 &&
         x < TABLE_HEIGHT &&
@@ -79,7 +88,6 @@ export class Connect4Game {
         x += dx;
         y += dy;
       }
-
       x = i - dx;
       y = j - dy;
       while (
@@ -94,7 +102,6 @@ export class Connect4Game {
         x -= dx;
         y -= dy;
       }
-
       if (count >= CONNECT_LENGTH) {
         for (const [x, y] of matchedNodes) {
           this.game[x][y].isWinner = true;
@@ -113,7 +120,7 @@ export class Connect4Game {
     }
   }
 
-  getGame() {
+  getNodes() {
     return this.game;
   }
 
@@ -125,7 +132,8 @@ export class Connect4Game {
     return this.winner;
   }
 
-  addNode(node: IGameNode, [i, j]: number[]) {
+  addNode(node: IGameNode, j: number) {
+    const i = this.getNextIndexI(j);
     if (!this.isValidMove(node, [i, j])) {
       return;
     }
