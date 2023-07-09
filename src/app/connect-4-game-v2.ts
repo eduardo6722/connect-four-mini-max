@@ -55,18 +55,18 @@ export class Connect4Game {
 
   private checkEndGame(node: IGameNode, [i, j]: number[]) {
     const directions: [number, number][] = [
-      [1, 0],
-      [0, 1],
-      [1, 1],
-      [-1, 1],
+      [1, 0], // vertical
+      [0, 1], // horizontal
+      [1, 1], // diagonal (top-left to bottom-right)
+      [-1, 1], // diagonal (bottom-left to top-right)
     ];
 
     for (const [dx, dy] of directions) {
-      let count = 1;
+      let count = 1; // count for the current direction
       let x = i + dx;
       let y = j + dy;
-      const matchedNodes: [number, number][] = [[i, j]];
 
+      // Check in the positive direction
       while (
         x >= 0 &&
         x < TABLE_HEIGHT &&
@@ -75,11 +75,11 @@ export class Connect4Game {
         this.game[x][y].player === node.player
       ) {
         count++;
-        matchedNodes.push([x, y]);
         x += dx;
         y += dy;
       }
 
+      // Check in the negative direction
       x = i - dx;
       y = j - dy;
       while (
@@ -90,20 +90,19 @@ export class Connect4Game {
         this.game[x][y].player === node.player
       ) {
         count++;
-        matchedNodes.push([x, y]);
         x -= dx;
         y -= dy;
       }
 
+      // If count reaches the required CONNECT_LENGTH, the current player is the winner
       if (count >= CONNECT_LENGTH) {
-        for (const [x, y] of matchedNodes) {
-          this.game[x][y].isWinner = true;
-        }
+        node.isWinner = true;
         this.winner = node.player;
         return;
       }
     }
 
+    // Check if the game board is full (draw)
     const isBoardFull = this.game.every((row) =>
       row.every((cell) => cell.player !== null)
     );
