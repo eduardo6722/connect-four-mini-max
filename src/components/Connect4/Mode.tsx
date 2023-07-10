@@ -3,7 +3,6 @@ import Image from 'next/image';
 function Mode({ onClick }) {
   return (
     <div className='flex flex-col gap-8 items-center justify-center w-full max-w-[720px] h-[600px]'>
-      <h1 className='text-xl font-bold'>Selecione um modo</h1>
       <button
         className='flex bg-[#616161] hover:bg-[#424242] flex-row gap-2 items-center shadow-lg p-4 cursor-pointer hover:shadow-xl duration-300 rounded-lg'
         onClick={() => onClick('human-vs-robot')}
