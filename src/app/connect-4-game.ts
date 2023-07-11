@@ -33,26 +33,6 @@ export class Connect4Game {
     return this.game;
   }
 
-  private isValidMove(node: IGameNode, [i, j]: number[]) {
-    if (this.lastPlayerMoved === node.player) {
-      return false;
-    }
-    if (this.game[i][j].player !== null) {
-      return false;
-    }
-    if (i < 0 || j < 0) return false;
-    if (i >= TABLE_HEIGHT || j >= TABLE_WIDTH) {
-      return false;
-    }
-    if (i === TABLE_HEIGHT - 1) {
-      return true;
-    }
-    if (this.game[i + 1][j].player === null) {
-      return false;
-    }
-    return true;
-  }
-
   private checkEndGame(node: IGameNode, [i, j]: number[]) {
     const directions: number[][] = [
       [1, 0],
@@ -125,11 +105,34 @@ export class Connect4Game {
   getNextIndexI(j: number) {
     let nextIndexI = TABLE_HEIGHT - 1;
     for (let i = nextIndexI; i >= 0; i--) {
-      if (this.game[i][j].player === null) {
-        return i;
+      if (this.game[i] && this.game[i][j] && this.game[i][j].player === null) {
+        if (this.game[i][j].player === null) {
+          return i;
+        }
       }
     }
     return nextIndexI;
+  }
+
+  isValidMove(node: IGameNode, [i, j]: number[]) {
+    if (!this.game[i][j]) return false;
+    if (this.lastPlayerMoved === node.player) {
+      return false;
+    }
+    if (this.game[i][j].player !== null) {
+      return false;
+    }
+    if (i < 0 || j < 0) return false;
+    if (i >= TABLE_HEIGHT || j >= TABLE_WIDTH) {
+      return false;
+    }
+    if (i === TABLE_HEIGHT - 1) {
+      return true;
+    }
+    if (this.game[i + 1][j].player === null) {
+      return false;
+    }
+    return true;
   }
 
   addNode(node: IGameNode, j: number) {

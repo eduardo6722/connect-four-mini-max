@@ -15,7 +15,11 @@ function Connect4() {
   const [step, setStep] = useState<GameStep>('game-mode');
 
   return (
-    <div className='flex flex-col items-center justify-center h-screen'>
+    <div className='flex flex-col items-center justify-center h-screen relative'>
+      <h1 className='text-[42px] mb-8 font-bold absolute top-[6%]'>
+        <span className='text-[#436ee6]'>Connect</span>
+        <span className='text-[#ff0000]'>4</span> Minimax
+      </h1>
       {step === 'game-mode' ? (
         <Mode
           onClick={(mode: GameMode) => {
@@ -40,6 +44,7 @@ function Connect4() {
         <Game
           gameMode={gameMode as GameMode}
           gameLevel={gameLevel as GameLevel}
+          handleNewGame={() => setStep('game-mode')}
         />
       ) : undefined}
     </div>
