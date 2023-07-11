@@ -203,11 +203,11 @@ function minimax(
   beta: number
 ) {
   let winner = getWinner(board);
-  if (winner !== null) {
+  if (winner !== -1 && winner !== null) {
     return scores[winner] - 20 * movesCount;
   }
 
-  if (winner === null) {
+  if (winner === -1) {
     return 0 - 50 * movesCount;
   }
 
@@ -232,7 +232,7 @@ function minimax(
           beta
         );
 
-        board[tempI][j].player = 'red';
+        board[tempI][j].player = null;
 
         bestScore = Math.max(score, bestScore);
 
@@ -251,7 +251,7 @@ function minimax(
       let tempI = nextSpace(board, j);
 
       if (tempI < TABLE_HEIGHT && tempI > -1) {
-        board[tempI][j].player = 'yellow';
+        board[tempI][j].player = 'red';
 
         let score = minimax(
           board,
@@ -289,7 +289,7 @@ function nextSpace(board: IGameNode[][], index: number) {
 export function bestMove(board: IGameNode[][], depth: number) {
   // AI to make its turn
   let bestScore = -Infinity;
-  let move = -1;
+  let move: number | null = null;
   let indexI = -1;
 
   const clonedBoard = JSON.parse(JSON.stringify(board));
@@ -298,7 +298,7 @@ export function bestMove(board: IGameNode[][], depth: number) {
     indexI = nextSpace(clonedBoard, j);
 
     if (indexI >= 0) {
-      if (move == null) {
+      if (move === null) {
         move = j;
       }
 
