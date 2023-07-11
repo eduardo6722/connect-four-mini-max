@@ -94,9 +94,12 @@ function Game({ gameMode, gameLevel, handleNewGame }: GameProps) {
 
   useEffect(() => {
     if (player === 'yellow' && !winner && !isGameTied && game) {
-      const j = bestMove(game.getNodes(), 5);
-      handleMove(j);
-      console.log('result', j);
+      const j = bestMove(game.getNodes(), 0);
+      if (j === null) {
+        setIsGameTied(true);
+      } else {
+        handleMove(j as number);
+      }
       setPlayer('red');
     }
   }, [game, handleMove, isGameTied, player, winner]);

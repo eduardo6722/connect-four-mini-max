@@ -35,15 +35,15 @@ function countDiagonal(
   let pieces = 0;
 
   for (let x = 0; x < 4; x++) {
-    if (direction == 1) {
+    if (direction === 1) {
       if (i + x < TABLE_HEIGHT && j + x < TABLE_WIDTH) {
-        if (board[i + x][j + x].player == player) {
+        if (board[i + x][j + x].player === player) {
           pieces += 1;
         }
       }
     } else {
       if (i + x < TABLE_HEIGHT && j - x < TABLE_WIDTH && j - x > 0) {
-        if (board[i + x][j - x].player == player) {
+        if (board[i + x][j - x].player === player) {
           pieces += 1;
         }
       }
@@ -65,18 +65,18 @@ function getWinner(board: IGameNode[][]) {
     for (let x = 0; x < TABLE_WIDTH; x++) {
       if (
         player(board, y, x) !== null &&
-        player(board, y, x) == player(board, y, x + 1) &&
-        player(board, y, x) == player(board, y, x + 2) &&
-        player(board, y, x) == player(board, y, x + 3)
+        player(board, y, x) === player(board, y, x + 1) &&
+        player(board, y, x) === player(board, y, x + 2) &&
+        player(board, y, x) === player(board, y, x + 3)
       ) {
         return player(board, y, x);
       }
 
       if (
         player(board, y, x) !== null &&
-        player(board, y, x) == player(board, y + 1, x) &&
-        player(board, y, x) == player(board, y + 2, x) &&
-        player(board, y, x) == player(board, y + 3, x)
+        player(board, y, x) === player(board, y + 1, x) &&
+        player(board, y, x) === player(board, y + 2, x) &&
+        player(board, y, x) === player(board, y + 3, x)
       ) {
         return player(board, y, x);
       }
@@ -84,9 +84,9 @@ function getWinner(board: IGameNode[][]) {
       for (let d = -1; d <= 1; d += 2) {
         if (
           player(board, y, x) !== null &&
-          player(board, y, x) == player(board, y + 1 * d, x + 1) &&
-          player(board, y, x) == player(board, y + 2 * d, x + 2) &&
-          player(board, y, x) == player(board, y + 3 * d, x + 3)
+          player(board, y, x) === player(board, y + 1 * d, x + 1) &&
+          player(board, y, x) === player(board, y + 2 * d, x + 2) &&
+          player(board, y, x) === player(board, y + 3 * d, x + 3)
         ) {
           return player(board, y, x);
         }
@@ -112,79 +112,79 @@ function getScore(
   for (let i = 1; i < TABLE_HEIGHT; i++) {
     for (let j = 1; j < TABLE_WIDTH; j++) {
       if (
-        (countPieces(board, i, j, i + 4, j, player) == 3 &&
-          countPieces(board, i, j, i + 4, j, null) == 1) ||
-        (countPieces(board, i, j, i, j + 4, player) == 3 &&
-          countPieces(board, i, j, i, j + 4, null) == 1) ||
-        (countDiagonal(board, i, j, 0, player) == 3 &&
-          countDiagonal(board, i, j, 0, null) == 1) ||
-        (countDiagonal(board, i, j, 1, player) == 3 &&
-          countDiagonal(board, i, j, 1, null) == 1)
+        (countPieces(board, i, j, i + 4, j, player) === 3 &&
+          countPieces(board, i, j, i + 4, j, null) === 1) ||
+        (countPieces(board, i, j, i, j + 4, player) === 3 &&
+          countPieces(board, i, j, i, j + 4, null) === 1) ||
+        (countDiagonal(board, i, j, 0, player) === 3 &&
+          countDiagonal(board, i, j, 0, null) === 1) ||
+        (countDiagonal(board, i, j, 1, player) === 3 &&
+          countDiagonal(board, i, j, 1, null) === 1)
       ) {
         score += 1000;
       }
 
       if (
-        (countPieces(board, i, j, i + 4, j, player) == 2 &&
-          countPieces(board, i, j, i + 4, j, null) == 2) ||
-        (countPieces(board, i, j, i, j + 4, player) == 2 &&
-          countPieces(board, i, j, i, j + 4, null) == 2) ||
-        (countDiagonal(board, i, j, 0, player) == 2 &&
-          countDiagonal(board, i, j, 0, null) == 2) ||
-        (countDiagonal(board, i, j, 1, player) == 2 &&
-          countDiagonal(board, i, j, 1, null) == 2)
+        (countPieces(board, i, j, i + 4, j, player) === 2 &&
+          countPieces(board, i, j, i + 4, j, null) === 2) ||
+        (countPieces(board, i, j, i, j + 4, player) === 2 &&
+          countPieces(board, i, j, i, j + 4, null) === 2) ||
+        (countDiagonal(board, i, j, 0, player) === 2 &&
+          countDiagonal(board, i, j, 0, null) === 2) ||
+        (countDiagonal(board, i, j, 1, player) === 2 &&
+          countDiagonal(board, i, j, 1, null) === 2)
       ) {
         score += 10;
       }
 
       if (
-        (countPieces(board, i, j, i + 4, j, player) == 1 &&
-          countPieces(board, i, j, i + 4, j, null) == 3) ||
-        (countPieces(board, i, j, i, j + 4, player) == 1 &&
-          countPieces(board, i, j, i, j + 4, null) == 3) ||
-        (countDiagonal(board, i, j, 0, player) == 1 &&
-          countDiagonal(board, i, j, 0, null) == 3) ||
-        (countDiagonal(board, i, j, 1, player) == 1 &&
-          countDiagonal(board, i, j, 1, null) == 3)
+        (countPieces(board, i, j, i + 4, j, player) === 1 &&
+          countPieces(board, i, j, i + 4, j, null) === 3) ||
+        (countPieces(board, i, j, i, j + 4, player) === 1 &&
+          countPieces(board, i, j, i, j + 4, null) === 3) ||
+        (countDiagonal(board, i, j, 0, player) === 1 &&
+          countDiagonal(board, i, j, 0, null) === 3) ||
+        (countDiagonal(board, i, j, 1, player) === 1 &&
+          countDiagonal(board, i, j, 1, null) === 3)
       ) {
         score += 1;
       }
 
       if (
-        (countPieces(board, i, j, i + 4, j, player2) == 3 &&
-          countPieces(board, i, j, i + 4, j, null) == 1) ||
-        (countPieces(board, i, j, i, j + 4, player2) == 3 &&
-          countPieces(board, i, j, i, j + 4, null) == 1) ||
-        (countDiagonal(board, i, j, 0, player2) == 3 &&
-          countDiagonal(board, i, j, 0, null) == 1) ||
-        (countDiagonal(board, i, j, 1, player2) == 3 &&
-          countDiagonal(board, i, j, 1, null) == 1)
+        (countPieces(board, i, j, i + 4, j, player2) === 3 &&
+          countPieces(board, i, j, i + 4, j, null) === 1) ||
+        (countPieces(board, i, j, i, j + 4, player2) === 3 &&
+          countPieces(board, i, j, i, j + 4, null) === 1) ||
+        (countDiagonal(board, i, j, 0, player2) === 3 &&
+          countDiagonal(board, i, j, 0, null) === 1) ||
+        (countDiagonal(board, i, j, 1, player2) === 3 &&
+          countDiagonal(board, i, j, 1, null) === 1)
       ) {
         score -= 1000;
       }
 
       if (
-        (countPieces(board, i, j, i + 4, j, player2) == 2 &&
-          countPieces(board, i, j, i + 4, j, null) == 2) ||
-        (countPieces(board, i, j, i, j + 4, player2) == 2 &&
-          countPieces(board, i, j, i, j + 4, null) == 2) ||
-        (countDiagonal(board, i, j, 0, player2) == 2 &&
-          countDiagonal(board, i, j, 0, null) == 2) ||
-        (countDiagonal(board, i, j, 1, player2) == 2 &&
-          countDiagonal(board, i, j, 1, null) == 2)
+        (countPieces(board, i, j, i + 4, j, player2) === 2 &&
+          countPieces(board, i, j, i + 4, j, null) === 2) ||
+        (countPieces(board, i, j, i, j + 4, player2) === 2 &&
+          countPieces(board, i, j, i, j + 4, null) === 2) ||
+        (countDiagonal(board, i, j, 0, player2) === 2 &&
+          countDiagonal(board, i, j, 0, null) === 2) ||
+        (countDiagonal(board, i, j, 1, player2) === 2 &&
+          countDiagonal(board, i, j, 1, null) === 2)
       ) {
         score -= 10;
       }
 
       if (
-        (countPieces(board, i, j, i + 4, j, player2) == 1 &&
-          countPieces(board, i, j, i + 4, j, null) == 3) ||
-        (countPieces(board, i, j, i, j + 4, player2) == 1 &&
-          countPieces(board, i, j, i, j + 4, null) == 3) ||
-        (countDiagonal(board, i, j, 0, player2) == 1 &&
-          countDiagonal(board, i, j, 0, null) == 3) ||
-        (countDiagonal(board, i, j, 1, player2) == 1 &&
-          countDiagonal(board, i, j, 1, null) == 3)
+        (countPieces(board, i, j, i + 4, j, player2) === 1 &&
+          countPieces(board, i, j, i + 4, j, null) === 3) ||
+        (countPieces(board, i, j, i, j + 4, player2) === 1 &&
+          countPieces(board, i, j, i, j + 4, null) === 3) ||
+        (countDiagonal(board, i, j, 0, player2) === 1 &&
+          countDiagonal(board, i, j, 0, null) === 3) ||
+        (countDiagonal(board, i, j, 1, player2) === 1 &&
+          countDiagonal(board, i, j, 1, null) === 3)
       ) {
         score -= 1;
       }
@@ -305,8 +305,6 @@ export function bestMove(board: IGameNode[][], depth: number) {
       clonedBoard[indexI][j].player = 'red';
 
       let score = minimax(clonedBoard, depth, false, 1, -Infinity, Infinity);
-
-      clonedBoard[indexI][j].player = null;
 
       if (score > bestScore) {
         bestScore = score;
