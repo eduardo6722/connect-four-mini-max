@@ -49,11 +49,14 @@ function Game({ gameMode, gameLevel, handleNewGame }: GameProps) {
         setWinner(checkWinner);
       }
       setNodes(game.getNodes());
-      setPlayer((current) => (current === 'red' ? 'yellow' : 'red'));
       const tied = isTied();
       setIsGameTied(tied);
+      setPlayer((current) => (current === 'red' ? 'yellow' : 'red'));
+      if (gameMode === 'human-vs-robot') {
+        setLoading(true);
+      }
     },
-    [game, isGameTied, isTied, player, winner]
+    [game, gameMode, isGameTied, isTied, player, winner]
   );
 
   const getWinnerAnimationClass = (node: IGameNode) => {
@@ -94,31 +97,35 @@ function Game({ gameMode, gameLevel, handleNewGame }: GameProps) {
   }, [winner]);
 
   useEffect(() => {
-    async function handleAIMove() {
+    async function handleAIMove(game: Connect4Game) {
       try {
-        setLoading(true);
-        if (
-          player === 'yellow' &&
-          gameMode === 'human-vs-robot' &&
-          !winner &&
-          !isGameTied &&
-          game
-        ) {
-          const j = await getBestMove(game.getNodes(), gameLevel);
-          if (j === null) {
-            setIsGameTied(true);
-          } else {
-            handleMove(j as number);
-          }
-          setPlayer('red');
+        const j = await getBestMove(game.getNodes(), gameLevel);
+        if (j === null) {
+          setIsGameTied(true);
+        } else {
+          handleMove(j as number);
         }
-        setLoading(false);
+        setPlayer('red');
       } catch (error) {
-        setLoading(true);
         setIsGameTied(true);
+      } finally {
+        setLoading(false);
       }
     }
-    handleAIMove();
+    if (
+      player === 'yellow' &&
+      gameMode === 'human-vs-robot' &&
+      !winner &&
+      !isGameTied &&
+      game
+    ) {
+      const timeout = setTimeout(() => {
+        handleAIMove(game);
+      }, 500);
+      return () => {
+        clearTimeout(timeout);
+      };
+    }
   }, [game, gameLevel, handleMove, isGameTied, player, winner, gameMode]);
 
   return (
@@ -134,11 +141,27 @@ function Game({ gameMode, gameLevel, handleNewGame }: GameProps) {
                 <p className='font-bold'>Empate!</p>
               ) : (
                 <>
-                  <p className='font-bold'>
-                    Rodada do{' '}
+                  <p className='font-bold flex flex-row items-baseline gap-1'>
+                    Rodada do
                     <span style={{ color: player as string }}>
-                      {playerName[player as string]}
+                      {`${playerName[player as string]} ${
+                        gameMode === 'human-vs-robot' && player === 'yellow'
+                          ? '(IA)'
+                          : ''
+                      }`}
                     </span>
+                    {loading ? (
+                      <span className='relative flex h-3 w-3'>
+                        <span
+                          style={{ background: player as string }}
+                          className='animate-ping absolute inline-flex h-full w-full rounded-full opacity-75'
+                        ></span>
+                        <span
+                          style={{ background: player as string }}
+                          className='relative inline-flex rounded-full h-3 w-3'
+                        ></span>
+                      </span>
+                    ) : undefined}
                   </p>
                   <div className='flex items-center gap-2'>
                     <span className='font-bold'>Modo debug</span>
@@ -151,7 +174,11 @@ function Game({ gameMode, gameLevel, handleNewGame }: GameProps) {
             <p className='font-bold'>
               Vencedor:{' '}
               <span style={{ color: winner as string }}>
-                {playerName[winner as string]}!
+                {`${playerName[winner as string]}${
+                  gameMode === 'human-vs-robot' && winner === 'yellow'
+                    ? ' (IA)'
+                    : ''
+                }!`}
               </span>
             </p>
           )}

@@ -67,8 +67,8 @@ function evaluateBoard(board: IGameNode[][]) {
   return score;
 }
 
-// Function to check if the game is over and return the winning player
-function checkGameOver(board) {
+// Check if the game is over and return the winning player
+function checkGameOver(board: IGameNode[][]) {
   // Check rows
   for (let row = 0; row < 6; row++) {
     for (let col = 0; col < 4; col++) {
@@ -143,7 +143,13 @@ function checkGameOver(board) {
 }
 
 // Minimax function with alpha-beta pruning
-function minimax(board, depth, alpha, beta, maximizingPlayer) {
+function minimax(
+  board: IGameNode[][],
+  depth: number,
+  alpha: number,
+  beta: number,
+  maximizingPlayer: boolean
+) {
   const gameOver = checkGameOver(board);
 
   if (depth === 0 || gameOver !== null) {
