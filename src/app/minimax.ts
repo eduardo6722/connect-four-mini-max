@@ -1,5 +1,14 @@
 import { IGameNode } from './connect-4-game';
 
+export interface DebugData {
+  j: number;
+  interations: number;
+  executionTime?: number;
+  enabled?: boolean;
+}
+
+let interations = 0;
+
 function evaluateBoard(board: IGameNode[][]) {
   // Define the heuristic values for different board configurations
   const heuristicValues = {
@@ -36,7 +45,7 @@ function evaluateBoard(board: IGameNode[][]) {
     }
   }
 
-  // Check diagonals (positive slope) for heuristic values
+  // Check diagonals
   for (let row = 0; row < 3; row++) {
     for (let col = 0; col < 4; col++) {
       const slice = [
@@ -50,7 +59,6 @@ function evaluateBoard(board: IGameNode[][]) {
     }
   }
 
-  // Check diagonals (negative slope) for heuristic values
   for (let row = 0; row < 3; row++) {
     for (let col = 3; col < 7; col++) {
       const slice = [
@@ -98,7 +106,7 @@ function checkGameOver(board: IGameNode[][]) {
     }
   }
 
-  // Check diagonals (positive slope)
+  // Check diagonals
   for (let row = 0; row < 3; row++) {
     for (let col = 0; col < 4; col++) {
       const slice = [
@@ -115,7 +123,6 @@ function checkGameOver(board: IGameNode[][]) {
     }
   }
 
-  // Check diagonals (negative slope)
   for (let row = 0; row < 3; row++) {
     for (let col = 3; col < 7; col++) {
       const slice = [
@@ -160,6 +167,10 @@ function minimax(
     } else {
       return evaluateBoard(board); // Heuristic evaluation
     }
+  }
+
+  if (depth > 0) {
+    interations++;
   }
 
   if (maximizingPlayer) {
@@ -208,7 +219,7 @@ function minimax(
 export function getBestMove(
   board: IGameNode[][],
   depth: number
-): Promise<number> {
+): Promise<DebugData> {
   return new Promise((resolve) => {
     let bestMove = -1;
     let bestEvaluation = -Infinity;
@@ -232,6 +243,12 @@ export function getBestMove(
       }
     }
 
-    return resolve(bestMove);
+    const totalInterations = interations;
+    interations = 0;
+
+    return resolve({
+      j: bestMove,
+      interations: totalInterations,
+    });
   });
 }

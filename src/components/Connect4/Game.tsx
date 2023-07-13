@@ -1,6 +1,6 @@
 'use client';
 
-import { getBestMove } from '@/app/minimax';
+import { DebugData, getBestMove } from '@/app/minimax';
 import { useCallback, useEffect, useState } from 'react';
 import ReactConfetti from 'react-confetti';
 import Toggle from 'react-toggle';
@@ -20,6 +20,12 @@ const playerName = {
 };
 
 function Game({ gameMode, gameLevel, handleNewGame }: GameProps) {
+  const [depth, setDepth] = useState<number>(-1);
+  const [debugData, setDebugData] = useState<DebugData>({
+    j: 0,
+    interations: 0,
+    executionTime: 0,
+  });
   const [loading, setLoading] = useState(false);
   const [game, setGame] = useState<Connect4Game>();
   const [nodes, setNodes] = useState<IGameNode[][]>([[]]);
@@ -82,7 +88,14 @@ function Game({ gameMode, gameLevel, handleNewGame }: GameProps) {
     setWinner(undefined);
     setIsGameTied(false);
     setPlayer('red');
-  }, []);
+    setDebugData((current) => ({
+      ...current,
+      j: 0,
+      interations: 0,
+      executionTime: 0,
+    }));
+    setDepth(gameLevel);
+  }, [gameLevel]);
 
   useEffect(() => {
     const newGame = new Connect4Game(['red', 'yellow']);
@@ -97,9 +110,23 @@ function Game({ gameMode, gameLevel, handleNewGame }: GameProps) {
   }, [winner]);
 
   useEffect(() => {
+    if (gameLevel) {
+      setDepth(gameLevel);
+    }
+  }, [gameLevel]);
+
+  useEffect(() => {
     async function handleAIMove(game: Connect4Game) {
       try {
-        const j = await getBestMove(game.getNodes(), gameLevel);
+        const start = performance.now();
+        const { j, interations } = await getBestMove(game.getNodes(), depth);
+        const end = performance.now();
+        setDebugData((current) => ({
+          ...current,
+          j,
+          interations,
+          executionTime: end - start,
+        }));
         if (j === null) {
           setIsGameTied(true);
         } else {
@@ -117,7 +144,8 @@ function Game({ gameMode, gameLevel, handleNewGame }: GameProps) {
       gameMode === 'human-vs-robot' &&
       !winner &&
       !isGameTied &&
-      game
+      game &&
+      depth >= 0
     ) {
       const timeout = setTimeout(() => {
         handleAIMove(game);
@@ -126,106 +154,144 @@ function Game({ gameMode, gameLevel, handleNewGame }: GameProps) {
         clearTimeout(timeout);
       };
     }
-  }, [game, gameLevel, handleMove, isGameTied, player, winner, gameMode]);
+  }, [game, depth, handleMove, isGameTied, player, winner, gameMode]);
 
   return (
     <div>
       {winner ? (
         <ReactConfetti width={window.innerWidth} height={window.innerHeight} />
       ) : undefined}
-      <div className='grid bg-[#3f6cea] justify-center rounded-md px-3 pb-3 relative'>
-        <div className='flex items-center justify-between h-[56px]'>
-          {!winner ? (
-            <>
-              {isGameTied ? (
-                <p className='font-bold'>Empate!</p>
-              ) : (
-                <>
-                  <p className='font-bold flex flex-row items-baseline gap-1'>
-                    Rodada do
-                    <span style={{ color: player as string }}>
-                      {`${playerName[player as string]} ${
-                        gameMode === 'human-vs-robot' && player === 'yellow'
-                          ? '(IA)'
-                          : ''
-                      }`}
-                    </span>
-                    {loading ? (
-                      <span className='relative flex h-3 w-3'>
-                        <span
-                          style={{ background: player as string }}
-                          className='animate-ping absolute inline-flex h-full w-full rounded-full opacity-75'
-                        ></span>
-                        <span
-                          style={{ background: player as string }}
-                          className='relative inline-flex rounded-full h-3 w-3'
-                        ></span>
-                      </span>
-                    ) : undefined}
-                  </p>
-                  <div className='flex items-center gap-2'>
-                    <span className='font-bold'>Modo debug</span>
-                    <Toggle onChange={(e) => console.log(e)} />
-                  </div>
-                </>
-              )}
-            </>
-          ) : (
-            <p className='font-bold'>
-              Vencedor:{' '}
-              <span style={{ color: winner as string }}>
-                {`${playerName[winner as string]}${
-                  gameMode === 'human-vs-robot' && winner === 'yellow'
-                    ? ' (IA)'
-                    : ''
-                }!`}
-              </span>
-            </p>
-          )}
-          {winner || isGameTied ? (
-            <div className='flex items-center gap-2'>
-              <button
-                className='font-bold px-4 py-2 bg-[red] hover:bg-[#ec0000] rounded-md leading-none duration-300'
-                onClick={handleRestartGame}
+      <div className='relative'>
+        {debugData?.enabled ? (
+          <div className='flex flex-col gap-2 w-[200px] h-[200px] bg-black absolute left-[100%] rounded-md ml-4 p-2 text-green-600 text-xs'>
+            <h1 className='font-bold'>Modo debug</h1>
+            <div className='flex flex-col gap-1'>
+              <label className=''>Profundidade máxima</label>
+              <select
+                className='w-full border border-green-600 rounded-md bg-black outline-none'
+                value={depth}
+                onChange={({ target: { value } }) => setDepth(+value)}
               >
-                Reiniciar jogo
-              </button>
-              <button
-                className='font-bold px-4 py-2 bg-[#154eeb] hover:bg-[#0341eb] rounded-md leading-none duration-300'
-                onClick={handleNewGame}
-              >
-                Novo jogo
-              </button>
+                {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((value) => (
+                  <option key={value}>{value}</option>
+                ))}
+              </select>
             </div>
-          ) : undefined}
-        </div>
-        {nodes.map((row, i) => (
-          <div key={i} className='flex flex-row'>
-            {row.map((node, j) => (
-              <div
-                onMouseOver={() => !winner && setHoverColumn(j)}
-                onMouseLeave={() => setHoverColumn(undefined)}
-                className={`${
-                  hoverColumn === j ? 'bg-[#154eeb]' : 'bg-[#3f6cea]'
-                } w-[42px] md:w-[72px] h-[42px] md:h-[72px] flex justify-center items-center relative p-2 cursor-pointer`}
-                key={j}
-                onClick={() => handleMove(j)}
-              >
-                <div
-                  style={{
-                    border: getNextIndexColor(i, j)
-                      ? `12px solid ${getNextIndexColor(i, j) as string}`
-                      : undefined,
-                    backgroundColor: node.player || 'white',
-                  }}
-                  className={`${getWinnerAnimationClass(node)} ${
-                    node.player ? 'filled-shadow' : ''
-                  } w-full h-full rounded-full duration-100 transition-all`}
-                />
-              </div>
-            ))}
+            <p>{`Coluna: ${debugData.j}`}</p>
+            <p>{`Interações: ${debugData.interations}`}</p>
+            <p>{`Execução: ${debugData.executionTime?.toFixed(0)}ms`}</p>
+            <button
+              className='absolute bottom-0 right-0 left-0 mx-2 mb-2 border border-green-600 rounded-md'
+              onClick={handleRestartGame}
+            >
+              Reiniciar jogo
+            </button>
           </div>
-        ))}
+        ) : undefined}
+        <div className='grid bg-[#3f6cea] justify-center rounded-md px-3 pb-3 relative'>
+          <div className='flex items-center justify-between h-[56px]'>
+            {!winner ? (
+              <>
+                {isGameTied ? (
+                  <p className='font-bold'>Empate!</p>
+                ) : (
+                  <>
+                    <p className='font-bold flex flex-row items-baseline gap-1'>
+                      Rodada do
+                      <span style={{ color: player as string }}>
+                        {`${playerName[player as string]} ${
+                          gameMode === 'human-vs-robot' && player === 'yellow'
+                            ? '(IA)'
+                            : ''
+                        }`}
+                      </span>
+                      {loading && player === 'yellow' ? (
+                        <span className='relative flex h-3 w-3'>
+                          <span
+                            style={{ background: player as string }}
+                            className='animate-ping absolute inline-flex h-full w-full rounded-full opacity-75'
+                          ></span>
+                          <span
+                            style={{ background: player as string }}
+                            className='relative inline-flex rounded-full h-3 w-3'
+                          ></span>
+                        </span>
+                      ) : undefined}
+                    </p>
+                    {gameMode === 'human-vs-robot' ? (
+                      <div className='flex items-center gap-2'>
+                        <span className='font-bold'>Modo debug</span>
+                        <Toggle
+                          checked={debugData.enabled}
+                          onChange={({ target: { checked } }) =>
+                            setDebugData((current) => ({
+                              ...current,
+                              enabled: checked,
+                            }))
+                          }
+                        />
+                      </div>
+                    ) : undefined}
+                  </>
+                )}
+              </>
+            ) : (
+              <p className='font-bold'>
+                Vencedor:{' '}
+                <span style={{ color: winner as string }}>
+                  {`${playerName[winner as string]}${
+                    gameMode === 'human-vs-robot' && winner === 'yellow'
+                      ? ' (IA)'
+                      : ''
+                  }!`}
+                </span>
+              </p>
+            )}
+            {winner || isGameTied ? (
+              <div className='flex items-center gap-2'>
+                <button
+                  className='font-bold px-4 py-2 bg-[red] hover:bg-[#ec0000] rounded-md leading-none duration-300'
+                  onClick={handleRestartGame}
+                >
+                  Reiniciar jogo
+                </button>
+                <button
+                  className='font-bold px-4 py-2 bg-[#154eeb] hover:bg-[#0341eb] rounded-md leading-none duration-300'
+                  onClick={handleNewGame}
+                >
+                  Novo jogo
+                </button>
+              </div>
+            ) : undefined}
+          </div>
+          {nodes.map((row, i) => (
+            <div key={i} className='flex flex-row'>
+              {row.map((node, j) => (
+                <div
+                  onMouseOver={() => !winner && setHoverColumn(j)}
+                  onMouseLeave={() => setHoverColumn(undefined)}
+                  className={`${
+                    hoverColumn === j ? 'bg-[#154eeb]' : 'bg-[#3f6cea]'
+                  } w-[42px] md:w-[72px] h-[42px] md:h-[72px] flex justify-center items-center relative p-2 cursor-pointer`}
+                  key={j}
+                  onClick={() => handleMove(j)}
+                >
+                  <div
+                    style={{
+                      border: getNextIndexColor(i, j)
+                        ? `12px solid ${getNextIndexColor(i, j) as string}`
+                        : undefined,
+                      backgroundColor: node.player || 'white',
+                    }}
+                    className={`${getWinnerAnimationClass(node)} ${
+                      node.player ? 'filled-shadow' : ''
+                    } w-full h-full rounded-full duration-100 transition-all`}
+                  />
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
