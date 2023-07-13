@@ -6,6 +6,8 @@ import ReactConfetti from 'react-confetti';
 import Toggle from 'react-toggle';
 import 'react-toggle/style.css';
 import { Connect4Game, IGameNode, Player } from '../../app/connect-4-game';
+import ArrowBack from '../icons/ArrowBack';
+import Restart from '../icons/Restart';
 import { GameLevel, GameMode } from './Connect4';
 
 interface GameProps {
@@ -250,16 +252,11 @@ function Game({ gameMode, gameLevel, handleNewGame }: GameProps) {
             {winner || isGameTied ? (
               <div className='flex items-center gap-2'>
                 <button
-                  className='font-bold px-4 py-2 bg-[red] hover:bg-[#ec0000] rounded-md leading-none duration-300'
+                  className='flex items-center justify-center gap-1 font-bold px-4 h-[36px] bg-[red] hover:bg-[#ec0000] rounded-md leading-none duration-300'
                   onClick={handleRestartGame}
                 >
-                  Reiniciar jogo
-                </button>
-                <button
-                  className='font-bold px-4 py-2 bg-[#154eeb] hover:bg-[#0341eb] rounded-md leading-none duration-300'
-                  onClick={handleNewGame}
-                >
-                  Novo jogo
+                  <Restart />
+                  <span>Reiniciar jogo</span>
                 </button>
               </div>
             ) : undefined}
@@ -291,6 +288,15 @@ function Game({ gameMode, gameLevel, handleNewGame }: GameProps) {
               ))}
             </div>
           ))}
+        </div>
+        <div className='w-full flex justify-center mt-8'>
+          <button
+            className='bg-[red] hover:bg-[#ec0000] duration-300 rounded-md px-4 h-[36px] font-bold flex items-center justify-center gap-1'
+            onClick={handleNewGame}
+          >
+            <ArrowBack />
+            <span>Voltar ao menu</span>
+          </button>
         </div>
       </div>
     </div>
