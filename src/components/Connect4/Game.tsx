@@ -1,6 +1,6 @@
 'use client';
 
-import { bestMove } from '@/app/minimax';
+import { getBestMove } from '@/app/minimax';
 import { useCallback, useEffect, useState } from 'react';
 import ReactConfetti from 'react-confetti';
 import Toggle from 'react-toggle';
@@ -20,6 +20,7 @@ const playerName = {
 };
 
 function Game({ gameMode, gameLevel, handleNewGame }: GameProps) {
+  const [loading, setLoading] = useState(false);
   const [game, setGame] = useState<Connect4Game>();
   const [nodes, setNodes] = useState<IGameNode[][]>([[]]);
   const [player, setPlayer] = useState<Player>('red');
@@ -93,16 +94,32 @@ function Game({ gameMode, gameLevel, handleNewGame }: GameProps) {
   }, [winner]);
 
   useEffect(() => {
-    if (player === 'yellow' && !winner && !isGameTied && game) {
-      const j = bestMove(game.getNodes(), 6);
-      if (j === null) {
+    async function handleAIMove() {
+      try {
+        setLoading(true);
+        if (
+          player === 'yellow' &&
+          gameMode === 'human-vs-robot' &&
+          !winner &&
+          !isGameTied &&
+          game
+        ) {
+          const j = await getBestMove(game.getNodes(), gameLevel);
+          if (j === null) {
+            setIsGameTied(true);
+          } else {
+            handleMove(j as number);
+          }
+          setPlayer('red');
+        }
+        setLoading(false);
+      } catch (error) {
+        setLoading(true);
         setIsGameTied(true);
-      } else {
-        handleMove(j as number);
       }
-      setPlayer('red');
     }
-  }, [game, handleMove, isGameTied, player, winner]);
+    handleAIMove();
+  }, [game, gameLevel, handleMove, isGameTied, player, winner, gameMode]);
 
   return (
     <div>

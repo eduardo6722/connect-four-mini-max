@@ -199,28 +199,33 @@ function minimax(board, depth, alpha, beta, maximizingPlayer) {
   }
 }
 // Function to get the best move using minimax with alpha-beta pruning
-export function bestMove(board: IGameNode[][], depth: number) {
-  let bestMove = -1;
-  let bestEvaluation = -Infinity;
-  const alpha = -Infinity;
-  const beta = Infinity;
+export function getBestMove(
+  board: IGameNode[][],
+  depth: number
+): Promise<number> {
+  return new Promise((resolve) => {
+    let bestMove = -1;
+    let bestEvaluation = -Infinity;
+    const alpha = -Infinity;
+    const beta = Infinity;
 
-  for (let col = 0; col < 7; col++) {
-    if (board[0][col].player === null) {
-      const newBoard = JSON.parse(JSON.stringify(board));
-      for (let row = 5; row >= 0; row--) {
-        if (newBoard[row][col].player === null) {
-          newBoard[row][col].player = 'yellow';
-          break;
+    for (let col = 0; col < 7; col++) {
+      if (board[0][col].player === null) {
+        const newBoard = JSON.parse(JSON.stringify(board));
+        for (let row = 5; row >= 0; row--) {
+          if (newBoard[row][col].player === null) {
+            newBoard[row][col].player = 'yellow';
+            break;
+          }
+        }
+        const evaluation = minimax(newBoard, depth, alpha, beta, false);
+        if (evaluation > bestEvaluation) {
+          bestEvaluation = evaluation;
+          bestMove = col;
         }
       }
-      const evaluation = minimax(newBoard, depth, alpha, beta, false);
-      if (evaluation > bestEvaluation) {
-        bestEvaluation = evaluation;
-        bestMove = col;
-      }
     }
-  }
 
-  return bestMove;
+    return resolve(bestMove);
+  });
 }

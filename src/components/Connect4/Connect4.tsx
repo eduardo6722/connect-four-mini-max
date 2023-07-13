@@ -6,7 +6,7 @@ import Level from './Level';
 import Mode from './Mode';
 
 export type GameMode = 'human-vs-robot' | 'human-vs-human';
-export type GameLevel = 'easy' | 'normal' | 'hard';
+export type GameLevel = 2 | 4 | 6;
 type GameStep = 'game-mode' | 'level' | 'game';
 
 function Connect4() {
