@@ -1,317 +1,226 @@
-import { IGameNode, Player, TABLE_HEIGHT, TABLE_WIDTH } from './connect-4-game';
+import { IGameNode } from './connect-4-game';
 
-const scores: { [key: string]: number } = {
-  red: Infinity,
-  yellow: -Infinity,
-};
+function evaluateBoard(board: IGameNode[][]) {
+  // Define the heuristic values for different board configurations
+  const heuristicValues = {
+    yyyy: 1000, // AI wins
+    rrrr: -1000, // Player wins
+    yy: 50, // AI has 2 in a row
+    rr: -50, // Player has 2 in a row
+    y: 10, // AI has 1 in a row
+    r: -10, // Player has 1 in a row
+  };
 
-function countPieces(
-  board: IGameNode[][],
-  i: number,
-  j: number,
-  i2: number,
-  j2: number,
-  player: Player
-) {
-  let pieces = 0;
-
-  for (i; i < i2; i++) {
-    for (j; j < j2; j++) {
-      if (board[i][j].player === player) {
-        pieces += 1;
-      }
-    }
-  }
-  return pieces;
-}
-
-function countDiagonal(
-  board: IGameNode[][],
-  i: number,
-  j: number,
-  direction: number,
-  player: Player
-) {
-  let pieces = 0;
-
-  for (let x = 0; x < 4; x++) {
-    if (direction === 1) {
-      if (i + x < TABLE_HEIGHT && j + x < TABLE_WIDTH) {
-        if (board[i + x][j + x].player === player) {
-          pieces += 1;
-        }
-      }
-    } else {
-      if (i + x < TABLE_HEIGHT && j - x < TABLE_WIDTH && j - x > 0) {
-        if (board[i + x][j - x].player === player) {
-          pieces += 1;
-        }
-      }
-    }
-  }
-  return pieces;
-}
-
-function player(board: IGameNode[][], y, x) {
-  return y < 0 || x < 0 || y >= TABLE_HEIGHT || x >= TABLE_WIDTH
-    ? null
-    : board[y][x].player;
-}
-
-function getWinner(board: IGameNode[][]) {
-  //loops through rows, columns, diagonals, etc for win condition
-
-  for (let y = 0; y < TABLE_HEIGHT; y++) {
-    for (let x = 0; x < TABLE_WIDTH; x++) {
-      if (
-        player(board, y, x) !== null &&
-        player(board, y, x) === player(board, y, x + 1) &&
-        player(board, y, x) === player(board, y, x + 2) &&
-        player(board, y, x) === player(board, y, x + 3)
-      ) {
-        return player(board, y, x);
-      }
-
-      if (
-        player(board, y, x) !== null &&
-        player(board, y, x) === player(board, y + 1, x) &&
-        player(board, y, x) === player(board, y + 2, x) &&
-        player(board, y, x) === player(board, y + 3, x)
-      ) {
-        return player(board, y, x);
-      }
-
-      for (let d = -1; d <= 1; d += 2) {
-        if (
-          player(board, y, x) !== null &&
-          player(board, y, x) === player(board, y + 1 * d, x + 1) &&
-          player(board, y, x) === player(board, y + 2 * d, x + 2) &&
-          player(board, y, x) === player(board, y + 3 * d, x + 3)
-        ) {
-          return player(board, y, x);
-        }
-      }
-    }
-  }
-
-  for (let y = 0; y < TABLE_HEIGHT; y++)
-    for (let x = 0; x < TABLE_WIDTH; x++)
-      if (player(board, y, x) === null) return null;
-  return -1; //tie
-}
-
-function getScore(
-  board: IGameNode[][],
-  player: Player,
-  player2: Player,
-  moveCount: number
-) {
-  //heuristic could be more in depth, using
   let score = 0;
 
-  for (let i = 1; i < TABLE_HEIGHT; i++) {
-    for (let j = 1; j < TABLE_WIDTH; j++) {
-      if (
-        (countPieces(board, i, j, i + 4, j, player) === 3 &&
-          countPieces(board, i, j, i + 4, j, null) === 1) ||
-        (countPieces(board, i, j, i, j + 4, player) === 3 &&
-          countPieces(board, i, j, i, j + 4, null) === 1) ||
-        (countDiagonal(board, i, j, 0, player) === 3 &&
-          countDiagonal(board, i, j, 0, null) === 1) ||
-        (countDiagonal(board, i, j, 1, player) === 3 &&
-          countDiagonal(board, i, j, 1, null) === 1)
-      ) {
-        score += 1000;
-      }
+  // Check rows for heuristic values
+  for (let row = 0; row < 6; row++) {
+    for (let col = 0; col < 4; col++) {
+      const slice = board[row].slice(col, col + 4).map((node) => node.player);
+      const key = slice.join('');
+      score += heuristicValues[key] || 0;
+    }
+  }
 
-      if (
-        (countPieces(board, i, j, i + 4, j, player) === 2 &&
-          countPieces(board, i, j, i + 4, j, null) === 2) ||
-        (countPieces(board, i, j, i, j + 4, player) === 2 &&
-          countPieces(board, i, j, i, j + 4, null) === 2) ||
-        (countDiagonal(board, i, j, 0, player) === 2 &&
-          countDiagonal(board, i, j, 0, null) === 2) ||
-        (countDiagonal(board, i, j, 1, player) === 2 &&
-          countDiagonal(board, i, j, 1, null) === 2)
-      ) {
-        score += 10;
-      }
+  // Check columns for heuristic values
+  for (let col = 0; col < 7; col++) {
+    for (let row = 0; row < 3; row++) {
+      const slice = [
+        board[row][col].player,
+        board[row + 1][col].player,
+        board[row + 2][col].player,
+        board[row + 3][col].player,
+      ];
+      const key = slice.join('');
+      score += heuristicValues[key] || 0;
+    }
+  }
 
-      if (
-        (countPieces(board, i, j, i + 4, j, player) === 1 &&
-          countPieces(board, i, j, i + 4, j, null) === 3) ||
-        (countPieces(board, i, j, i, j + 4, player) === 1 &&
-          countPieces(board, i, j, i, j + 4, null) === 3) ||
-        (countDiagonal(board, i, j, 0, player) === 1 &&
-          countDiagonal(board, i, j, 0, null) === 3) ||
-        (countDiagonal(board, i, j, 1, player) === 1 &&
-          countDiagonal(board, i, j, 1, null) === 3)
-      ) {
-        score += 1;
-      }
+  // Check diagonals (positive slope) for heuristic values
+  for (let row = 0; row < 3; row++) {
+    for (let col = 0; col < 4; col++) {
+      const slice = [
+        board[row][col].player,
+        board[row + 1][col + 1].player,
+        board[row + 2][col + 2].player,
+        board[row + 3][col + 3].player,
+      ];
+      const key = slice.join('');
+      score += heuristicValues[key] || 0;
+    }
+  }
 
-      if (
-        (countPieces(board, i, j, i + 4, j, player2) === 3 &&
-          countPieces(board, i, j, i + 4, j, null) === 1) ||
-        (countPieces(board, i, j, i, j + 4, player2) === 3 &&
-          countPieces(board, i, j, i, j + 4, null) === 1) ||
-        (countDiagonal(board, i, j, 0, player2) === 3 &&
-          countDiagonal(board, i, j, 0, null) === 1) ||
-        (countDiagonal(board, i, j, 1, player2) === 3 &&
-          countDiagonal(board, i, j, 1, null) === 1)
-      ) {
-        score -= 1000;
-      }
-
-      if (
-        (countPieces(board, i, j, i + 4, j, player2) === 2 &&
-          countPieces(board, i, j, i + 4, j, null) === 2) ||
-        (countPieces(board, i, j, i, j + 4, player2) === 2 &&
-          countPieces(board, i, j, i, j + 4, null) === 2) ||
-        (countDiagonal(board, i, j, 0, player2) === 2 &&
-          countDiagonal(board, i, j, 0, null) === 2) ||
-        (countDiagonal(board, i, j, 1, player2) === 2 &&
-          countDiagonal(board, i, j, 1, null) === 2)
-      ) {
-        score -= 10;
-      }
-
-      if (
-        (countPieces(board, i, j, i + 4, j, player2) === 1 &&
-          countPieces(board, i, j, i + 4, j, null) === 3) ||
-        (countPieces(board, i, j, i, j + 4, player2) === 1 &&
-          countPieces(board, i, j, i, j + 4, null) === 3) ||
-        (countDiagonal(board, i, j, 0, player2) === 1 &&
-          countDiagonal(board, i, j, 0, null) === 3) ||
-        (countDiagonal(board, i, j, 1, player2) === 1 &&
-          countDiagonal(board, i, j, 1, null) === 3)
-      ) {
-        score -= 1;
-      }
+  // Check diagonals (negative slope) for heuristic values
+  for (let row = 0; row < 3; row++) {
+    for (let col = 3; col < 7; col++) {
+      const slice = [
+        board[row][col].player,
+        board[row + 1][col - 1].player,
+        board[row + 2][col - 2].player,
+        board[row + 3][col - 3].player,
+      ];
+      const key = slice.join('');
+      score += heuristicValues[key] || 0;
     }
   }
 
   return score;
 }
 
-function minimax(
-  board: IGameNode[][],
-  depth: number,
-  isMaximizing: boolean,
-  movesCount: number,
-  alpha: number,
-  beta: number
-) {
-  let winner = getWinner(board);
-  if (winner !== -1 && winner !== null) {
-    return scores[winner] - 20 * movesCount;
+// Function to check if the game is over and return the winning player
+function checkGameOver(board) {
+  // Check rows
+  for (let row = 0; row < 6; row++) {
+    for (let col = 0; col < 4; col++) {
+      const slice = board[row].slice(col, col + 4).map((node) => node.player);
+      if (slice.every((player) => player === 'red')) {
+        return 'red';
+      } else if (slice.every((player) => player === 'yellow')) {
+        return 'yellow';
+      }
+    }
   }
 
-  if (winner === -1) {
-    return 0 - 50 * movesCount;
+  // Check columns
+  for (let col = 0; col < 7; col++) {
+    for (let row = 0; row < 3; row++) {
+      const slice = [
+        board[row][col].player,
+        board[row + 1][col].player,
+        board[row + 2][col].player,
+        board[row + 3][col].player,
+      ];
+      if (slice.every((player) => player === 'red')) {
+        return 'red';
+      } else if (slice.every((player) => player === 'yellow')) {
+        return 'yellow';
+      }
+    }
   }
 
-  if (depth === 0) {
-    return getScore(board, 'red', 'yellow', movesCount);
+  // Check diagonals (positive slope)
+  for (let row = 0; row < 3; row++) {
+    for (let col = 0; col < 4; col++) {
+      const slice = [
+        board[row][col].player,
+        board[row + 1][col + 1].player,
+        board[row + 2][col + 2].player,
+        board[row + 3][col + 3].player,
+      ];
+      if (slice.every((player) => player === 'red')) {
+        return 'red';
+      } else if (slice.every((player) => player === 'yellow')) {
+        return 'yellow';
+      }
+    }
   }
 
-  if (isMaximizing) {
-    let bestScore = -Infinity;
-    for (let j = 0; j < TABLE_HEIGHT; j++) {
-      let tempI = nextSpace(board, j);
+  // Check diagonals (negative slope)
+  for (let row = 0; row < 3; row++) {
+    for (let col = 3; col < 7; col++) {
+      const slice = [
+        board[row][col].player,
+        board[row + 1][col - 1].player,
+        board[row + 2][col - 2].player,
+        board[row + 3][col - 3].player,
+      ];
+      if (slice.every((player) => player === 'red')) {
+        return 'red';
+      } else if (slice.every((player) => player === 'yellow')) {
+        return 'yellow';
+      }
+    }
+  }
 
-      if (tempI < TABLE_HEIGHT && tempI > -1) {
-        board[tempI][j].player = 'yellow';
+  // Check for a tie
+  const isTie = board.every((row) => row.every((node) => node.player !== null));
+  if (isTie) {
+    return 'tie';
+  }
 
-        let score = minimax(
-          board,
-          depth - 1,
-          false,
-          movesCount + 1,
-          alpha,
-          beta
-        );
+  // Game is not over
+  return null;
+}
 
-        board[tempI][j].player = null;
+// Minimax function with alpha-beta pruning
+function minimax(board, depth, alpha, beta, maximizingPlayer) {
+  const gameOver = checkGameOver(board);
 
-        bestScore = Math.max(score, bestScore);
+  if (depth === 0 || gameOver !== null) {
+    if (gameOver === 'yellow') {
+      return 1000 - depth; // AI wins
+    } else if (gameOver === 'red') {
+      return depth - 1000; // Player wins
+    } else {
+      return evaluateBoard(board); // Heuristic evaluation
+    }
+  }
 
-        alpha = Math.max(bestScore, alpha);
-        if (alpha >= beta) {
+  if (maximizingPlayer) {
+    let maxEvaluation = -Infinity;
+    for (let col = 0; col < 7; col++) {
+      if (board[0][col].player === null) {
+        const newBoard = JSON.parse(JSON.stringify(board));
+        for (let row = 5; row >= 0; row--) {
+          if (newBoard[row][col].player === null) {
+            newBoard[row][col].player = 'yellow';
+            break;
+          }
+        }
+        const evaluation = minimax(newBoard, depth - 1, alpha, beta, false);
+        maxEvaluation = Math.max(maxEvaluation, evaluation);
+        alpha = Math.max(alpha, evaluation);
+        if (beta <= alpha) {
           break;
         }
       }
     }
-
-    return bestScore;
+    return maxEvaluation;
   } else {
-    let bestScore = Infinity;
-    for (let j = 0; j < TABLE_WIDTH; j++) {
-      // Is the spot available?
-      let tempI = nextSpace(board, j);
-
-      if (tempI < TABLE_HEIGHT && tempI > -1) {
-        board[tempI][j].player = 'red';
-
-        let score = minimax(
-          board,
-          depth - 1,
-          true,
-          movesCount + 1,
-          alpha,
-          beta
-        );
-
-        board[tempI][j].player = null;
-
-        bestScore = Math.min(score, bestScore);
-
-        beta = Math.min(bestScore, beta);
-        if (alpha >= beta) {
+    let minEvaluation = Infinity;
+    for (let col = 0; col < 7; col++) {
+      if (board[0][col].player === null) {
+        const newBoard = JSON.parse(JSON.stringify(board));
+        for (let row = 5; row >= 0; row--) {
+          if (newBoard[row][col].player === null) {
+            newBoard[row][col].player = 'red';
+            break;
+          }
+        }
+        const evaluation = minimax(newBoard, depth - 1, alpha, beta, true);
+        minEvaluation = Math.min(minEvaluation, evaluation);
+        beta = Math.min(beta, evaluation);
+        if (beta <= alpha) {
           break;
         }
       }
     }
-
-    return bestScore;
+    return minEvaluation;
   }
 }
-
-function nextSpace(board: IGameNode[][], index: number) {
-  for (let i = TABLE_HEIGHT - 1; i >= 0; i--) {
-    if (board[i][index].player === null) {
-      return i;
-    }
-  }
-  return -1;
-}
-
+// Function to get the best move using minimax with alpha-beta pruning
 export function bestMove(board: IGameNode[][], depth: number) {
-  // AI to make its turn
-  let bestScore = -Infinity;
-  let move: number | null = null;
-  let indexI = -1;
+  let bestMove = -1;
+  let bestEvaluation = -Infinity;
+  const alpha = -Infinity;
+  const beta = Infinity;
 
-  const clonedBoard = JSON.parse(JSON.stringify(board));
-
-  for (let j = 0; j < TABLE_WIDTH; j++) {
-    indexI = nextSpace(clonedBoard, j);
-
-    if (indexI >= 0) {
-      if (move === null) {
-        move = j;
+  for (let col = 0; col < 7; col++) {
+    if (board[0][col].player === null) {
+      const newBoard = JSON.parse(JSON.stringify(board));
+      for (let row = 5; row >= 0; row--) {
+        if (newBoard[row][col].player === null) {
+          newBoard[row][col].player = 'yellow';
+          break;
+        }
       }
-
-      clonedBoard[indexI][j].player = 'red';
-
-      let score = minimax(clonedBoard, depth, false, 1, -Infinity, Infinity);
-
-      if (score > bestScore) {
-        bestScore = score;
-        move = j;
+      const evaluation = minimax(newBoard, depth, alpha, beta, false);
+      if (evaluation > bestEvaluation) {
+        bestEvaluation = evaluation;
+        bestMove = col;
       }
     }
   }
 
-  return move;
+  return bestMove;
 }

@@ -94,7 +94,7 @@ function Game({ gameMode, gameLevel, handleNewGame }: GameProps) {
 
   useEffect(() => {
     if (player === 'yellow' && !winner && !isGameTied && game) {
-      const j = bestMove(game.getNodes(), 0);
+      const j = bestMove(game.getNodes(), 6);
       if (j === null) {
         setIsGameTied(true);
       } else {
