@@ -22,7 +22,7 @@ function Connect4() {
 
   return (
     <div className='flex flex-col items-center justify-center h-screen relative'>
-      <h1 className='text-[42px] mb-8 font-bold absolute top-[6%]'>
+      <h1 className='text-[20px] md:text-[36px] mb-8 font-bold absolute top-[4%]'>
         <span className='text-[#436ee6]'>Connect</span>
         <span className='text-[#ff0000]'>4</span> Minimax
       </h1>

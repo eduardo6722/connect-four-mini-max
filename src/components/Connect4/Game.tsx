@@ -163,9 +163,9 @@ function Game({ gameMode, gameLevel, handleNewGame }: GameProps) {
       {winner ? (
         <ReactConfetti width={window.innerWidth} height={window.innerHeight} />
       ) : undefined}
-      <div className='relative'>
+      <div className='relative md:text-[16px] text-xs'>
         {debugData?.enabled ? (
-          <div className='flex flex-col gap-2 w-[200px] h-[200px] bg-black absolute left-[100%] rounded-md ml-4 p-2 text-green-600 text-xs'>
+          <div className='flex flex-col gap-2 w-[200px] h-[200px] mb-2 bg-black relative md:absolute mx-auto md:left-[100%] md:mt-0 mt-[72px] rounded-md md:ml-4 p-2 text-green-600 text-xs'>
             <h1 className='font-bold'>Modo debug</h1>
             <div className='flex flex-col gap-1'>
               <label className=''>Profundidade máxima</label>

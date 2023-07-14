@@ -16,7 +16,9 @@ function HowToPlay() {
           >
             <ArrowBack />
           </button>
-          <h2 className='text-2xl font-bold'>Como jogar Connect 4</h2>
+          <h2 className='text-lg md:text-2xl font-bold'>
+            Como jogar Connect 4
+          </h2>
           <div />
         </div>
         <p className='mb-4'>
